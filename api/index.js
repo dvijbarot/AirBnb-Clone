@@ -6,8 +6,10 @@ require("dotenv").config();
 const app = express();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 app.use(express.json());
+app.use(cookieParser());
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "eyJhbGciOiJIUz";
@@ -65,6 +67,20 @@ app.post("/login", async (req, res) => {
     res.status(404).json("Not executed");
   }
 });
+
+app.get("/profile", (req, res) => {
+  const { token } = req.cookies;
+  if (token) {
+    jwt.verify(token, jwtSecret, {}, (err, user) => {
+      if (err) throw err;
+      res.json(user);
+    });
+  } else {
+    res.json(null);
+  }
+  // res.json({ token });
+});
+
 app.listen(4000, () => {
   console.log("Server is running on port 4000");
 });
